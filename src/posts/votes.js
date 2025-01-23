@@ -153,9 +153,29 @@ module.exports = function (Posts) {
 		if (isPrivileged) {
 			return;
 		}
-		if (reputation < meta.config[`min:rep:${type}`]) {
-			throw new Error(`[[error:not-enough-reputation-to-${type}, ${meta.config[`min:rep:${type}`]}]]`);
+
+		console.log('Reputation:', reputation);
+		const minReputationRequired = meta.config[`min:rep:${type}`];
+		console.log('Min Reputation Required:', minReputationRequired);
+		const errorMessage = `[[error:not-enough-reputation-to-${type}, ${minReputationRequired}]]`;
+		console.log('Error Message:', errorMessage);
+
+		if (reputation < minReputationRequired) {
+			console.log('here');
+			throw new Error(errorMessage);
 		}
+		
+		console.log('**Evelyn**');
+		console.log('Voted PIDs Today:', votedPidsToday);
+		console.log('Votes Today Limit:', votesToday);
+		console.log('Voter Per User Today:', voterPerUserToday);
+		console.log('Target UID:', targetUid);
+	
+
+		/*
+		if (reputation < meta.config[`min:rep:${type}`]) {
+	      throw new Error(`[[error:not-enough-reputation-to-${type}, ${meta.config[`min:rep:${type}`]}]]`);
+		} */
 		const votesToday = meta.config[`${type}sPerDay`];
 		if (votesToday && votedPidsToday.length >= votesToday) {
 			throw new Error(`[[error:too-many-${type}s-today, ${votesToday}]]`);
