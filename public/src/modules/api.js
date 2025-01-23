@@ -35,7 +35,7 @@ async function call(options, callback) {
 
 async function xhr(options) {
 	// Normalize body based on type
-	const { url } = options;
+	const url = options.url;
 	delete options.url;
 
 	if (options.data && !(options.data instanceof FormData)) {
@@ -44,17 +44,9 @@ async function xhr(options) {
 	}
 
 	// Allow options to be modified by plugins, etc.
-	({ options } = await fireHook('filter:api.options', { options }));
+	const hookResult = await fireHook('filter:api.options', { options });
+	options = hookResult.options;
 
-	/**
-	 * Note: pre-v4 backwards compatibility
-	 *
-	 * This module now passes in "data" to xhr().
-	 * This is because the "filter:api.options" hook (and plugins using it) expect "data".
-	 * fetch() expects body, so we rename it here.
-	 *
-	 * In v4, replace all instances of "data" with "body" and record as breaking change.
-	 */
 	if (options.data) {
 		options.body = options.data;
 		delete options.data;
@@ -65,25 +57,20 @@ async function xhr(options) {
 	const contentType = headers.get('content-type');
 	const isJSON = contentType && contentType.startsWith('application/json');
 
-	let response;
-	if (options.method !== 'HEAD') {
-		if (isJSON) {
-			response = await res.json();
-		} else {
-			response = await res.text();
-		}
-	}
-
 	if (!res.ok) {
-		if (response) {
-			throw new Error(isJSON ? response.status.message : response);
+		let errorMessage;
+		if (isJSON) {
+			const jsonResponse = await res.json();
+			errorMessage = jsonResponse.status?.message || res.statusText;
+		} else {
+			errorMessage = await res.text();
 		}
-		throw new Error(res.statusText);
+		throw new Error(errorMessage);
 	}
 
-	return isJSON && response && response.hasOwnProperty('status') && response.hasOwnProperty('response') ?
-		response.response :
-		response;
+	if (options.method !== 'HEAD') {
+		return isJSON ? await res.json() : await res.text();
+	}
 }
 
 export function get(route, data, onSuccess) {
