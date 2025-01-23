@@ -42,7 +42,7 @@ function handleErrorResponse(res, response, isJSON) {
 }
 async function xhr(options) {
 	// Normalize body based on type
-	console.log("Test Log: Code execution reached here - Evelyn Lo");
+	console.log('Test Log: Code execution reached here - Evelyn Lo');
 
 	const { url } = options;
 	delete options.url;
