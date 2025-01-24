@@ -164,23 +164,22 @@ module.exports = function (Posts) {
 			console.log('here');
 			throw new Error(errorMessage);
 		}
-		
 		console.log('**Evelyn**');
 		console.log('Voted PIDs Today:', votedPidsToday);
-		console.log('Votes Today Limit:', votesToday);
-		console.log('Voter Per User Today:', voterPerUserToday);
 		console.log('Target UID:', targetUid);
-	
-
 		/*
 		if (reputation < meta.config[`min:rep:${type}`]) {
 	      throw new Error(`[[error:not-enough-reputation-to-${type}, ${meta.config[`min:rep:${type}`]}]]`);
 		} */
 		const votesToday = meta.config[`${type}sPerDay`];
+		console.log('Votes Today Limit:', votesToday);
+
 		if (votesToday && votedPidsToday.length >= votesToday) {
 			throw new Error(`[[error:too-many-${type}s-today, ${votesToday}]]`);
 		}
 		const voterPerUserToday = meta.config[`${type}sPerUserPerDay`];
+		console.log('Voter Per User Today:', voterPerUserToday);
+
 		if (voterPerUserToday) {
 			const postData = await Posts.getPostsFields(votedPidsToday, ['uid']);
 			const targetUpVotes = postData.filter(p => p.uid === targetUid).length;
